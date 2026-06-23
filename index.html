@@ -1,1 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>聖恩全台通訊錄</title>
+  <style>
+    :root{
+      --ci:#61c1be;
+      --ci-dark:#3da6a3;
+      --bg:#f5f8f8;
+      --card:#ffffff;
+      --text:#263238;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --danger:#c62828;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","Microsoft JhengHei",sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .app{max-width:640px;margin:0 auto;min-height:100vh;padding-bottom:40px;}
+    header{
+      background:linear-gradient(135deg,var(--ci),var(--ci-dark));
+      color:white;padding:26px 18px 22px;text-align:center;
+      border-radius:0 0 26px 26px;box-shadow:0 8px 22px rgba(61,166,163,.25);
+    }
+    h1{margin:0;font-size:25px;letter-spacing:.5px}
+    .subtitle{margin:8px 0 0;font-size:14px;opacity:.95}
+    .content{padding:18px}
+    .search{
+      width:100%;border:1px solid var(--line);border-radius:18px;
+      padding:15px 16px;font-size:17px;outline:none;background:white;
+      box-shadow:0 3px 12px rgba(15,23,42,.06);margin-bottom:14px;
+    }
+    .hotline{
+      display:block;text-decoration:none;background:#fff;color:var(--danger);
+      border:2px solid rgba(198,40,40,.18);border-radius:20px;padding:16px;
+      text-align:center;font-weight:800;font-size:19px;
+      box-shadow:0 4px 14px rgba(15,23,42,.07);margin-bottom:16px;
+    }
+    .hotline span{display:block;font-size:14px;color:#555;margin-top:4px}
+    .area-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px;}
+    .area-btn{
+      border:0;background:white;border-radius:16px;padding:15px 8px;font-size:17px;
+      font-weight:800;color:var(--text);box-shadow:0 3px 12px rgba(15,23,42,.07);cursor:pointer;
+    }
+    .area-btn.active{background:var(--ci);color:white;}
+    .result-title{font-size:18px;font-weight:900;margin:18px 2px 12px;}
+    .cards{display:grid;gap:13px;}
+    .card{
+      background:var(--card);border:1px solid var(--line);border-radius:22px;padding:14px;
+      box-shadow:0 5px 18px rgba(15,23,42,.07);display:flex;gap:14px;align-items:center;
+    }
+    .photo{
+      width:92px;height:92px;border-radius:18px;object-fit:cover;background:#eef2f7;
+      flex:0 0 auto;cursor:pointer;border:3px solid rgba(97,193,190,.35);
+    }
+    .info{flex:1;min-width:0}
+    .name{font-size:21px;font-weight:900;margin-bottom:4px;}
+    .role,.area{color:var(--muted);font-size:14px;margin-bottom:3px;}
+    .phone{font-size:15px;margin:7px 0 10px;font-weight:700;}
+    .call{
+      display:inline-block;text-decoration:none;background:var(--ci);color:white;
+      font-weight:900;border-radius:13px;padding:10px 14px;font-size:15px;
+    }
+    .empty{
+      background:white;border-radius:18px;padding:24px;text-align:center;color:var(--muted);
+      box-shadow:0 3px 12px rgba(15,23,42,.06);
+    }
+    .hint{color:var(--muted);font-size:13px;text-align:center;margin:14px 0 6px;}
+    .modal{
+      display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:99;
+      align-items:center;justify-content:center;padding:20px;
+    }
+    .modal.show{display:flex}
+    .modal-inner{
+      background:white;border-radius:24px;padding:18px;width:min(92vw,420px);
+      text-align:center;position:relative;
+    }
+    .modal img{width:100%;max-width:360px;aspect-ratio:1/1;object-fit:cover;border-radius:22px;}
+    .modal-name{font-size:24px;font-weight:900;margin-top:12px;}
+    .modal-detail{color:var(--muted);margin-top:4px;}
+    .close{
+      position:absolute;right:12px;top:10px;border:0;background:#eee;width:34px;height:34px;
+      border-radius:999px;font-size:20px;cursor:pointer;
+    }
+    @media (max-width:420px){
+      .photo{width:82px;height:82px}
+      .name{font-size:19px}
+      .card{padding:12px;gap:12px}
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>聖恩全台通訊錄</h1>
+    <p class="subtitle">搜尋姓名、職稱、電話或區域，快速一鍵撥號</p>
+  </header>
 
+  <div class="content">
+    <input id="searchInput" class="search" type="search" placeholder="搜尋姓名、職稱、電話、區域…" />
+
+    <a class="hotline" href="tel:0800556655">
+      📞 24小時接體專線 0800-556-655
+      <span>按下即可撥號</span>
+    </a>
+
+    <div class="area-grid" id="areaGrid"></div>
+
+    <div class="hint">點選區域查看名單，或直接使用上方搜尋。</div>
+
+    <div class="result-title" id="resultTitle">請選擇區域</div>
+    <div class="cards" id="cards"></div>
+  </div>
+</div>
+
+<div class="modal" id="photoModal" onclick="closeModal(event)">
+  <div class="modal-inner">
+    <button class="close" onclick="hideModal()">×</button>
+    <img id="modalPhoto" src="" alt="">
+    <div class="modal-name" id="modalName"></div>
+    <div class="modal-detail" id="modalDetail"></div>
+  </div>
+</div>
+
+<script>
+const areas = ["台北","宜花東","桃園","新竹","台中","嘉義","台南","高雄"];
+const contacts = [
+  {id:"103112", name:"陳世裕", role:"副總經理", phone:"0966790501", area:"台北"},
+  {id:"104132", name:"李嘉馨", role:"主辦禮儀師", phone:"0966790377", area:"台北"},
+  {id:"106110", name:"吳玉芬", role:"專案禮儀師", phone:"0966790012", area:"台北"},
+  {id:"105127", name:"宋緯奇", role:"服務專員", phone:"0966790393", area:"台北"},
+  {id:"107102", name:"李資萍", role:"服務專員", phone:"0966790015", area:"台北"},
+  {id:"106123", name:"陳維傑", role:"服務專員", phone:"0966790011", area:"台北"},
+  {id:"109111", name:"黎志航", role:"服務專員", phone:"0966790378", area:"台北"},
+  {id:"109120", name:"李建宗", role:"服務專員", phone:"0966790074", area:"台北"},
+  {id:"110116", name:"黃凱柔", role:"服務專員", phone:"0966790234", area:"台北"},
+  {id:"108126", name:"楊名芳", role:"服務專員", phone:"0966790392", area:"宜花東"},
+  {id:"109127", name:"傅聖儒", role:"處長", phone:"0966790005", area:"桃園"},
+  {id:"104112", name:"蕭子靖", role:"資深禮儀師", phone:"0966790383", area:"桃園"},
+  {id:"109123", name:"高誌鴻", role:"服務專員", phone:"0966790403", area:"桃園"},
+  {id:"106128", name:"林炳穎", role:"服務專員", phone:"0966790008", area:"新竹"},
+  {id:"109121", name:"呂恒宗", role:"服務專員", phone:"0966790054", area:"新竹"},
+  {id:"105139", name:"顏柏家", role:"處長", phone:"0966790382", area:"台中"},
+  {id:"104124", name:"楊秀雯", role:"禮儀師", phone:"0966790396", area:"台中"},
+  {id:"112150", name:"宋偉銘", role:"服務專員", phone:"0966790215", area:"台中"},
+  {id:"110109", name:"陳淩祥", role:"服務專員", phone:"0966790245", area:"台中"},
+  {id:"113103", name:"顧澤銘", role:"禮儀師", phone:"0966790042", area:"嘉義"},
+  {id:"112111", name:"林聖曜", role:"服務專員", phone:"0966790380", area:"台南"},
+  {id:"105139", name:"顏柏家", role:"處長", phone:"0966790382", area:"高雄"},
+  {id:"105132", name:"周宗穎", role:"專案禮儀師", phone:"0966790388", area:"高雄"},
+  {id:"104137", name:"林雅芸", role:"服務專員", phone:"0966790390", area:"高雄"},
+  {id:"111104", name:"王智賢", role:"服務專員", phone:"0966790013", area:"高雄"}
+];
+
+let activeArea = "";
+
+function photoPath(c){ return `photos/${c.id}.jpg`; }
+
+function renderAreas(){
+  const grid = document.getElementById("areaGrid");
+  grid.innerHTML = areas.map(area => `
+    <button class="area-btn ${area === activeArea ? "active" : ""}" onclick="selectArea('${area}')">${area}</button>
+  `).join("");
+}
+
+function formatPhone(phone){
+  return phone.replace(/(\d{4})(\d{3})(\d{3})/, "$1-$2-$3");
+}
+
+function card(c){
+  return `
+    <article class="card">
+      <img class="photo" src="${photoPath(c)}" alt="${c.name}" onclick='showModal(${JSON.stringify(c)})'>
+      <div class="info">
+        <div class="name">${c.name}</div>
+        <div class="role">${c.role}</div>
+        <div class="area">區域：${c.area}</div>
+        <div class="phone">📞 ${formatPhone(c.phone)}</div>
+        <a class="call" href="tel:${c.phone}">立即撥號</a>
+      </div>
+    </article>
+  `;
+}
+
+function render(list, title){
+  document.getElementById("resultTitle").textContent = title;
+  const cards = document.getElementById("cards");
+  if(list.length === 0){
+    cards.innerHTML = `<div class="empty">查無符合資料</div>`;
+    return;
+  }
+  cards.innerHTML = list.map(card).join("");
+}
+
+function selectArea(area){
+  activeArea = area;
+  document.getElementById("searchInput").value = "";
+  renderAreas();
+  const list = contacts.filter(c => c.area === area);
+  render(list, `${area}｜${list.length} 位聯絡人`);
+}
+
+function search(){
+  const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+  activeArea = "";
+  renderAreas();
+  if(!keyword){
+    render([], "請選擇區域");
+    return;
+  }
+  const list = contacts.filter(c => {
+    const text = `${c.id} ${c.name} ${c.role} ${c.phone} ${c.area}`.toLowerCase();
+    return text.includes(keyword);
+  });
+  render(list, `搜尋結果｜${list.length} 位聯絡人`);
+}
+
+function showModal(c){
+  document.getElementById("modalPhoto").src = photoPath(c);
+  document.getElementById("modalName").textContent = c.name;
+  document.getElementById("modalDetail").textContent = `${c.role}｜${c.area}｜${formatPhone(c.phone)}`;
+  document.getElementById("photoModal").classList.add("show");
+}
+
+function hideModal(){
+  document.getElementById("photoModal").classList.remove("show");
+}
+
+function closeModal(event){
+  if(event.target.id === "photoModal") hideModal();
+}
+
+document.getElementById("searchInput").addEventListener("input", search);
+renderAreas();
+render([], "請選擇區域");
+</script>
+</body>
+</html>
