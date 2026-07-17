@@ -231,26 +231,35 @@ function selectArea(area){
   const list = contacts.filter(c => c.area === area);
   render(list, `${area}｜${list.length} 位聯絡人`);
 
-  const resultTitle = document.getElementById("resultTitle");
-  const cards = document.getElementById("cards");
-
-  // 先清除上一次的提示效果
-  cards.classList.remove("result-highlight");
-
-  // 等名單顯示完成後，自動往下移到服務人員區
   setTimeout(() => {
-    resultTitle.scrollIntoView({
-      behavior:"smooth",
-      block:"start"
+    const firstCard = document.querySelector("#cards .card");
+
+    if(!firstCard) return;
+
+    // 取得第一張人員卡片的位置
+    const cardPosition =
+      firstCard.getBoundingClientRect().top +
+      window.pageYOffset -
+      18;
+
+    // 畫面自動平滑往下移
+    window.scrollTo({
+      top:cardPosition,
+      behavior:"smooth"
     });
 
-    // 名單短暫亮起，讓使用者知道已經切換成功
-    cards.classList.add("result-highlight");
+    // 第一張卡片短暫亮起
+    firstCard.classList.remove("card-highlight");
 
     setTimeout(() => {
-      cards.classList.remove("result-highlight");
-    }, 1400);
-  }, 100);
+      firstCard.classList.add("card-highlight");
+    }, 300);
+
+    setTimeout(() => {
+      firstCard.classList.remove("card-highlight");
+    }, 2100);
+
+  }, 150);
 }
 
 function search(){
