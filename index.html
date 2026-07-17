@@ -57,7 +57,27 @@
       font-weight:800;color:var(--text);box-shadow:0 3px 12px rgba(15,23,42,.07);cursor:pointer;
     }
     .area-btn.active{background:var(--ci);color:white;}
-    .result-title{font-size:18px;font-weight:900;margin:18px 2px 12px;}
+/* 點選區域後，人員名單短暫亮起 */
+.result-highlight{
+  animation:resultFlash 1.4s ease;
+  border-radius:18px;
+}
+
+@keyframes resultFlash{
+  0%{
+    background:rgba(97,193,190,.28);
+    box-shadow:0 0 0 8px rgba(97,193,190,.18);
+  }
+  100%{
+    background:transparent;
+    box-shadow:none;
+  }
+}
+
+/* 自動捲動時，上方保留一點空間 */
+#resultTitle{
+  scroll-margin-top:18px;
+}
     .cards{display:grid;gap:13px;}
     .card{
       background:var(--card);border:1px solid var(--line);border-radius:22px;padding:14px;
