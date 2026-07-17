@@ -230,8 +230,30 @@ function selectArea(area){
   activeArea = area;
   document.getElementById("searchInput").value = "";
   renderAreas();
+
   const list = contacts.filter(c => c.area === area);
   render(list, `${area}｜${list.length} 位聯絡人`);
+
+  const resultTitle = document.getElementById("resultTitle");
+  const cards = document.getElementById("cards");
+
+  // 先清除上一次的提示效果
+  cards.classList.remove("result-highlight");
+
+  // 等名單顯示完成後，自動往下移到服務人員區
+  setTimeout(() => {
+    resultTitle.scrollIntoView({
+      behavior:"smooth",
+      block:"start"
+    });
+
+    // 名單短暫亮起，讓使用者知道已經切換成功
+    cards.classList.add("result-highlight");
+
+    setTimeout(() => {
+      cards.classList.remove("result-highlight");
+    }, 1400);
+  }, 100);
 }
 
 function search(){
