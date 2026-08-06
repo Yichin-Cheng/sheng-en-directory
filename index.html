@@ -169,8 +169,8 @@ const contacts = [
   {id:"109127", name:"傅聖儒", role:"處長", phone:"0966790005", area:"桃園"},
   {id:"104112", name:"蕭子靖", role:"資深禮儀師", phone:"0966790383", area:"桃園"},
   {id:"109123", name:"高誌鴻", role:"服務專員", phone:"0966790403", area:"桃園"},
-  {id:"106128", name:"林炳穎", role:"服務專員", phone:"0966790008", area:"新竹"},
-  {id:"109121", name:"呂恒宗", role:"服務專員", phone:"0966790054", area:"新竹"},
+  {id:"106128", name:"林炳穎", role:"服務專員", phone:"0966790008", area:"新竹、苗栗"},
+  {id:"109121", name:"呂恒宗", role:"服務專員", phone:"0966790054", area:"新竹、苗栗"},
   {id:"105139", name:"顏柏家", role:"處長", phone:"0966790382", area:"台中"},
   {id:"104124", name:"楊秀雯", role:"禮儀師", phone:"0966790396", area:"台中"},
   {id:"112150", name:"宋偉銘", role:"服務專員", phone:"0966790215", area:"台中"},
@@ -228,7 +228,7 @@ function selectArea(area){
   document.getElementById("searchInput").value = "";
   renderAreas();
 
-  const list = contacts.filter(c => c.area === area);
+  const list = contacts.filter(c => c.area.includes(area));
   render(list, `${area}｜${list.length} 位聯絡人`);
 
   setTimeout(() => {
